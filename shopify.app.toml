@@ -1,3 +1,29 @@
-# This file stores configurations for your Shopify app.
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
+client_id = "95db8860bb8b4ea7513b7e60ab59d732"
+name = "smart-upsell-app"
+handle = "smart-upsell-app"
+application_url = "https://correlation-instrument-pockets-blocks.trycloudflare.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "my-upsell-store.myshopify.com"
+include_config_on_deploy = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "write_products"
+
+[auth]
+redirect_urls = [
+  "https://correlation-instrument-pockets-blocks.trycloudflare.com/auth/callback",
+  "https://correlation-instrument-pockets-blocks.trycloudflare.com/auth/shopify/callback",
+  "https://correlation-instrument-pockets-blocks.trycloudflare.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-01"
+
+[pos]
+embedded = false
