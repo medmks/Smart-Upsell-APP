@@ -1,0 +1,29 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "bc62cb0dbe0fe496c02203da9d79b6aa"
+name = "SMART-UPSELL-APP"
+handle = "smart-upsell-app-2"
+application_url = "https://net-nowhere-ripe-meaning.trycloudflare.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "smart-upsell-app.myshopify.com"
+include_config_on_deploy = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = ""
+
+[auth]
+redirect_urls = [
+  "https://net-nowhere-ripe-meaning.trycloudflare.com/auth/callback",
+  "https://net-nowhere-ripe-meaning.trycloudflare.com/auth/shopify/callback",
+  "https://net-nowhere-ripe-meaning.trycloudflare.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-01"
+
+[pos]
+embedded = false
