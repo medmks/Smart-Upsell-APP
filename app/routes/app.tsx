@@ -24,6 +24,8 @@ export default function App() {
           Home
         </Link>
         <Link to="/app/additional">Additional page</Link>
+        <Link to="/app/checkout">Upsell Extension page</Link>
+
       </ui-nav-menu>
       <Outlet />
     </AppProvider>

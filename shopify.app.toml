@@ -3,7 +3,7 @@
 client_id = "95db8860bb8b4ea7513b7e60ab59d732"
 name = "smart-upsell-app"
 handle = "smart-upsell-app"
-application_url = "https://correlation-instrument-pockets-blocks.trycloudflare.com"
+application_url = "https://cardiff-enormous-choice-brian.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://correlation-instrument-pockets-blocks.trycloudflare.com/auth/callback",
-  "https://correlation-instrument-pockets-blocks.trycloudflare.com/auth/shopify/callback",
-  "https://correlation-instrument-pockets-blocks.trycloudflare.com/api/auth/callback"
+  "https://cardiff-enormous-choice-brian.trycloudflare.com/auth/callback",
+  "https://cardiff-enormous-choice-brian.trycloudflare.com/auth/shopify/callback",
+  "https://cardiff-enormous-choice-brian.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
