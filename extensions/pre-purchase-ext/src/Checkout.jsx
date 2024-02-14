@@ -14,12 +14,19 @@ import {
   useCartLines,
   useApplyCartLinesChange,
   useApi,
+  
+  
 } from "@shopify/ui-extensions-react/checkout";
+
+
 // Set up the entry point for the extension
 export default reactExtension("purchase.checkout.block.render", () => <App />);
 
+
+
 function App() {
-  const { query, i18n } = useApi();
+  const { query, i18n, sessionToken} = useApi();
+
   const applyCartLinesChange = useApplyCartLinesChange();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,10 +34,46 @@ function App() {
   const [showError, setShowError] = useState(false);
   const lines = useCartLines();
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
 
+  useEffect(() => {
+    async function queryApi() {
+      // Request a new (or cached) session token from Shopify
+      const token = await sessionToken.get();
+
+      const apiResponse =
+        await FetchfromApisettings(token);
+      // Use your response
+      console.log('API response', apiResponse);
+    }
+
+    async function FetchfromApisettings(token) {
+
+      const res = fetch(
+          'https://timing-luxury-kai-dryer.trycloudflare.com/api/settings',
+          {
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'include',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+
+            },
+          },
+        ).then((res)=>{
+          return res.json()
+        })
+        .then((data)=>{
+          return data
+        })
+      return res
+  }
+
+  queryApi();
+  fetchProducts()
+  }, [sessionToken]);
+
+    
   useEffect(() => {
     if (showError) {
       const timer = setTimeout(() => setShowError(false), 3000);

@@ -19,9 +19,12 @@ model Session {
   expires     DateTime?
   accessToken String
   userId      BigInt?
+  // prePostStatus Boolean
+  
 }
 
-model status{
-id          String    @id
-disabled     Boolean 
+model PrePurchase{
+id          Int      @id @default(autoincrement())
+prePurchaseEnabled     String 
+shop String
 }

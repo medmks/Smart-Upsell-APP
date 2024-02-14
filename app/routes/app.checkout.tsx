@@ -1,44 +1,58 @@
-import { Button,Text,BlockStack,Grid,Divider,Layout,Card,InlineGrid } from "@shopify/polaris";
+import { Button,Text,BlockStack,Grid,Layout,Card,InlineGrid, PageActions, Page } from "@shopify/polaris";
+import { Form, useNavigation, useSubmit } from "@remix-run/react";
+import type { ActionFunction } from "@remix-run/node";
+import { authenticate } from "~/shopify.server";
+import db from "../db.server"
+import { useState } from "react";
 
-import React, { useState, useEffect } from "react";
-// import { Outlet } from "react-router-dom";
+//REVIEW: ActionFunction triggered the action when posting data  
+export const action:ActionFunction = async ({request}) =>{
 
+      const { session } = await authenticate.admin(request);
+      const {shop} = session;
+
+  /** @type {object} */
+      const data = {
+        ...Object.fromEntries(await request.formData()),
+        shop,
+      };
+      console.log(data);
+
+
+const Status =  await db.prePurchase.create({data})
+console.log(Status.id);
+return null
+}
 function Settings() {
-  const [enablePrePurchase, setEnablePrePurchase] = useState(false);
 
-  useEffect(() => {
-    //TODO: Fetch the current settings from your backend
-    //TODO: and update the state accordingly
-    //TODO: Example: fetchSettings().then((settings) => setEnablePrePurchase(settings.enablePrePurchase));
-  }, []);
+  const [prepurchaseenable,setprepurchaseenable] = useState(false)
+  const [CleanFormState,setCleanFormState] = useState(false)
+  const ismessed = JSON.stringify(prepurchaseenable) !== JSON.stringify(CleanFormState);
+  const nav = useNavigation();
+  const isSaving =
+    nav.state === "submitting" && nav.formData?.get("action") !== "delete";
 
-  const fetchSettings = async () => {
-    //TODO: Implement logic to fetch settings from your backend
-    //TODO: Example: const response = await fetch('https:your-backend.com/settings');
-    //TODO: const settings = await response.json();
-    //TODO: return settings;
-  };
-  
-  const updateSettings = async (newSettings:number) => {
-    // TODO: Implement logic to update settings on your backend
-    // Example: await fetch('https://your-backend.com/settings', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify(newSettings),
-    // });
-  };
+const submit = useSubmit();
 
-  const handleToggleChange = () => {
-    // Update the state locally
-    setEnablePrePurchase(!enablePrePurchase);
 
-    // Update the settings on your backend
-    // Example: updateSettings({ enablePrePurchase: !enablePrePurchase });
-  };
+  //TODO: save the data 
+  function handleSave() {
+    const data = {
+      prePurchaseEnabled:  Boolean(prepurchaseenable)
+    };
+    setCleanFormState(prepurchaseenable);
+    submit(data, { method: "post" });
+  }
+
+
+// const generateDiscount = () => submit({}, { replace: true, method: 'POST'})
 
   return (
+    <Page>
+
+<ui-title-bar title={"Extension Settings"}>
+          Enable / Disable  
+      </ui-title-bar>
     <Layout>
       <Layout.Section>
         <Grid>
@@ -49,7 +63,9 @@ function Settings() {
                     <Text as="h2" variant="headingSm">
                       Pre purchase extension
                     </Text>
-                      <Button variant="primary" onClick={()=>handleToggleChange()}>{enablePrePurchase ? "Desable":"Enable"}</Button>
+                    <Form method="post">     
+                          <Button onClick={()=> setprepurchaseenable(!prepurchaseenable)} variant="primary">{prepurchaseenable?"Disable":"Enable" }</Button>
+                    </Form>
                   </InlineGrid>
                   <Text as="p" variant="bodyMd">
                     Disable and enable the Pre purchase extension for upsell and fix Add your favorite products
@@ -64,7 +80,9 @@ function Settings() {
                     <Text as="h2" variant="headingSm">
                       Post purchase extension 
                     </Text>
-                      <Button variant="primary" onClick={()=>handleToggleChange()}>{enablePrePurchase ? "Desable":"Enable"}</Button>
+
+                      <Button variant="primary">Disable</Button>
+                 
                   </InlineGrid>
                   <Text as="p" variant="bodyMd">
                   Disable and enable Post purchase extension for upsell and fix Add your favorite products
@@ -72,34 +90,37 @@ function Settings() {
                 </BlockStack>
               </Card>
           </Grid.Cell>
-
-
         </Grid>
-     
-
-      
       </Layout.Section>
+      <Layout.Section>
+
+<PageActions
+  secondaryActions={[
+    {
+      content: "cancel",
+      loading: false,
+      disabled: true,
+      destructive: true,
+      outline: true,
+      onAction: () =>
+        submit({ action: "cancel" }, { method: "post" }),
+    },
+  ]}
+  primaryAction={{
+    content: "Save",
+    loading: isSaving,
+    disabled: !ismessed,
+    onAction: handleSave,
+  }}
+/>
+
+</Layout.Section>
   </Layout>
 
-    // <LegacyCard>
-    //         <BlockStack gap="500">
 
-
-    // <div className="">
-    // <Text variant="heading3xl" as="h2">
-    //     Online store dashboard
-    //   </Text>  
-    //     <label>
-    //     Enable Pre-Purchase Extension
-    //   </label>
-    //   <Button variant="primary" onClick={()=>handleToggleChange()}>{enablePrePurchase ? "Desable":"Enable"}</Button>
-
-    //   <Outlet />
-    // </div>
-    // </BlockStack>
-    // </LegacyCard>
-
+  </Page>
   );
+
 }
 
 export default Settings;
