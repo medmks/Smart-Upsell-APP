@@ -19581,7 +19581,7 @@ ${errorInfo.componentStack}`);
   var import_jsx_runtime4 = __toESM(require_jsx_runtime());
   var Checkout_default = reactExtension("purchase.checkout.block.render", () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
-    const { query, i18n } = useApi();
+    const { query, i18n, sessionToken } = useApi();
     const applyCartLinesChange = useApplyCartLinesChange();
     const [products, setProducts] = (0, import_react20.useState)([]);
     const [loading, setLoading] = (0, import_react20.useState)(false);
@@ -19589,8 +19589,37 @@ ${errorInfo.componentStack}`);
     const [showError, setShowError] = (0, import_react20.useState)(false);
     const lines = useCartLines();
     (0, import_react20.useEffect)(() => {
+      function queryApi() {
+        return __async(this, null, function* () {
+          const token = yield sessionToken.get();
+          const apiResponse = yield FetchfromApisettings(token);
+          console.log("API response", apiResponse);
+        });
+      }
+      function FetchfromApisettings(token) {
+        return __async(this, null, function* () {
+          const res = fetch(
+            "https://timing-luxury-kai-dryer.trycloudflare.com/api/settings",
+            {
+              method: "GET",
+              mode: "cors",
+              credentials: "include",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+              }
+            }
+          ).then((res2) => {
+            return res2.json();
+          }).then((data) => {
+            return data;
+          });
+          return res;
+        });
+      }
+      queryApi();
       fetchProducts();
-    }, []);
+    }, [sessionToken]);
     (0, import_react20.useEffect)(() => {
       if (showError) {
         const timer = setTimeout(() => setShowError(false), 3e3);
