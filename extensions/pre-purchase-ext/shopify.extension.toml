@@ -45,9 +45,15 @@ network_access = true
 # your extension. Learn more:
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#settings-definition
 
-# [extensions.settings]
-# [[extensions.settings.fields]]
-# key = "selected_variant"
-# type = "variant_reference"
-# name = "Selected Variant"
-# description = "Enter a title for the banner"
+ [extensions.settings]
+ [[extensions.settings.fields]]
+ key = "Extension_title"
+ type = "single_line_text_field"
+ name = "Title of your extension"
+ description = "Enter a title for the Extension"
+ [[extensions.settings.fields]]
+ key = "Extension_limit"
+ type = "number_integer"
+ name = "Limit of products"
+ description = "Enter a limit for the products"
+

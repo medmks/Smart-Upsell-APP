@@ -19577,29 +19577,44 @@ ${errorInfo.componentStack}`);
     throw new ExtensionHasNoMethodError("applyCartLinesChange", api.extension.target);
   }
 
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/checkout/hooks/settings.mjs
+  function useSettings() {
+    const settings = useSubscription(useApi().settings);
+    return settings;
+  }
+
   // extensions/pre-purchase-ext/src/Checkout.jsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime());
   var Checkout_default = reactExtension("purchase.checkout.block.render", () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
     const { query, i18n, sessionToken } = useApi();
     const applyCartLinesChange = useApplyCartLinesChange();
+    const [show, setShow] = (0, import_react20.useState)(true);
     const [products, setProducts] = (0, import_react20.useState)([]);
     const [loading, setLoading] = (0, import_react20.useState)(false);
     const [adding, setAdding] = (0, import_react20.useState)(false);
     const [showError, setShowError] = (0, import_react20.useState)(false);
     const lines = useCartLines();
+    const settings = useSettings();
+    const TitleExtension = settings.Extension_title;
+    const Limit = settings.Extension_limit;
     (0, import_react20.useEffect)(() => {
       function queryApi() {
         return __async(this, null, function* () {
-          const token = yield sessionToken.get();
-          const apiResponse = yield FetchfromApisettings(token);
-          console.log("API response", apiResponse);
+          try {
+            const token = yield sessionToken.get();
+            const data = yield FetchfromApisettings(token);
+            console.log(data);
+            setShow(data);
+          } catch (error) {
+            console.error("Error:", error);
+          }
         });
       }
       function FetchfromApisettings(token) {
         return __async(this, null, function* () {
           const res = fetch(
-            "https://timing-luxury-kai-dryer.trycloudflare.com/api/settings",
+            "https://spirits-captain-surfing-verbal.trycloudflare.com/api/settings",
             {
               method: "GET",
               mode: "cors",
@@ -19618,8 +19633,8 @@ ${errorInfo.componentStack}`);
         });
       }
       queryApi();
-      fetchProducts();
-    }, [sessionToken]);
+      fetchProducts(Limit, lines);
+    }, [sessionToken, Limit]);
     (0, import_react20.useEffect)(() => {
       if (showError) {
         const timer = setTimeout(() => setShowError(false), 3e3);
@@ -19641,9 +19656,12 @@ ${errorInfo.componentStack}`);
         }
       });
     }
-    function fetchProducts() {
+    function fetchProducts(limit, VariantId) {
       return __async(this, null, function* () {
         setLoading(true);
+        console.log("====================================");
+        console.log(VariantId);
+        console.log("====================================");
         try {
           const { data } = yield query(
             `query ($first: Int!) {
@@ -19668,7 +19686,7 @@ ${errorInfo.componentStack}`);
           }
         }`,
             {
-              variables: { first: 3 }
+              variables: { first: limit ? limit : 2 }
             }
           );
           setProducts(data.products.nodes);
@@ -19689,14 +19707,15 @@ ${errorInfo.componentStack}`);
     if (!productsOnOffer.length) {
       return null;
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+    return show && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
       ProductOffer,
       {
         product: productsOnOffer[0],
         i18n,
         adding,
         handleAddToCart,
-        showError
+        showError,
+        TitleExtension
       }
     );
   }
@@ -19731,14 +19750,17 @@ ${errorInfo.componentStack}`);
       return !isProductVariantInCart;
     });
   }
-  function ProductOffer({ product, i18n, adding, handleAddToCart, showError }) {
+  function ProductOffer({ product, i18n, adding, handleAddToCart, showError, TitleExtension }) {
     var _a, _b;
     const { images, title, variants } = product;
     const renderPrice = i18n.formatCurrency(variants.nodes[0].price.amount);
     const imageUrl = (_b = (_a = images.nodes[0]) == null ? void 0 : _a.url) != null ? _b : "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_medium.png?format=webp&v=1530129081";
     return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { spacing: "loose", children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Divider2, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Heading2, { level: 2, children: "You might also like" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Heading2, { level: 2, children: [
+        TitleExtension ? TitleExtension : " You might also like",
+        "  "
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(BlockStack2, { spacing: "loose", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
         InlineLayout2,
         {

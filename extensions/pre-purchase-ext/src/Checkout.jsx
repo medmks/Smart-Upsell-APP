@@ -14,42 +14,43 @@ import {
   useCartLines,
   useApplyCartLinesChange,
   useApi,
-  
-  
+  useSettings,
+
+ 
 } from "@shopify/ui-extensions-react/checkout";
 
-
-// Set up the entry point for the extension
 export default reactExtension("purchase.checkout.block.render", () => <App />);
-
-
 
 function App() {
   const { query, i18n, sessionToken} = useApi();
-
   const applyCartLinesChange = useApplyCartLinesChange();
+  const [show, setShow] = useState(true);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [showError, setShowError] = useState(false);
   const lines = useCartLines();
+  const settings = useSettings();
+  const TitleExtension = settings.Extension_title;
+  const Limit = settings.Extension_limit;
+  
+
 
 
   useEffect(() => {
     async function queryApi() {
-      // Request a new (or cached) session token from Shopify
-      const token = await sessionToken.get();
-
-      const apiResponse =
-        await FetchfromApisettings(token);
-      // Use your response
-      console.log('API response', apiResponse);
+      try {
+        const token = await sessionToken.get();
+        const data = await FetchfromApisettings(token);
+        console.log(data);
+         setShow(data)
+      } catch (error) {
+        console.error('Error:', error);
+      }
     }
-
     async function FetchfromApisettings(token) {
-
       const res = fetch(
-          'https://timing-luxury-kai-dryer.trycloudflare.com/api/settings',
+          'https://spirits-captain-surfing-verbal.trycloudflare.com/api/settings',
           {
             method: 'GET',
             mode: 'cors',
@@ -57,7 +58,6 @@ function App() {
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
-
             },
           },
         ).then((res)=>{
@@ -70,8 +70,8 @@ function App() {
   }
 
   queryApi();
-  fetchProducts()
-  }, [sessionToken]);
+  fetchProducts(Limit,lines)
+  }, [sessionToken,Limit]);
 
     
   useEffect(() => {
@@ -95,8 +95,11 @@ function App() {
       }
     }
 
-  async function fetchProducts() {
+  async function fetchProducts(limit,VariantId) {
     setLoading(true);
+    console.log('====================================');
+    console.log(VariantId);
+    console.log('====================================');
     try {
       const { data } = await query(
         `query ($first: Int!) {
@@ -121,7 +124,7 @@ function App() {
           }
         }`,
         {
-          variables: { first: 3 },
+          variables: { first: limit?limit:2},
         }
       );
       setProducts(data.products.nodes);
@@ -131,6 +134,7 @@ function App() {
       setLoading(false);
     }
   }
+
 
   if (loading) {
     return <LoadingSkeleton />;
@@ -146,14 +150,22 @@ function App() {
     return null;
   }
 
+
+
   return (
+
+    show && (
     <ProductOffer
       product={productsOnOffer[0]}
       i18n={i18n}
       adding={adding}
       handleAddToCart={handleAddToCart}
       showError={showError}
+      TitleExtension={TitleExtension}
     />
+  )
+
+
   );
 }
 
@@ -183,7 +195,9 @@ function LoadingSkeleton() {
 }
 
 function getProductsOnOffer(lines, products) {
+
   const cartLineProductVariantIds = lines.map((item) => item.merchandise.id);
+
   return products.filter((product) => {
     const isProductVariantInCart = product.variants.nodes.some(({ id }) =>
       cartLineProductVariantIds.includes(id)
@@ -192,7 +206,7 @@ function getProductsOnOffer(lines, products) {
   });
 }
 
-function ProductOffer({ product, i18n, adding, handleAddToCart, showError }) {
+function ProductOffer({ product, i18n, adding, handleAddToCart, showError,TitleExtension }) {
   const { images, title, variants } = product;
   const renderPrice = i18n.formatCurrency(variants.nodes[0].price.amount);
   const imageUrl =
@@ -202,7 +216,7 @@ function ProductOffer({ product, i18n, adding, handleAddToCart, showError }) {
   return (
     <BlockStack spacing='loose'>
       <Divider />
-      <Heading level={2}>You might also like</Heading>
+      <Heading level={2}>{TitleExtension ? TitleExtension:" You might also like" }  </Heading>
       <BlockStack spacing='loose'>
         <InlineLayout
           spacing='base'
