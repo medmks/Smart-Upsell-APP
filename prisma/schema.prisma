@@ -19,8 +19,9 @@ model Session {
   expires     DateTime?
   accessToken String
   userId      BigInt?
-  // prePostStatus Boolean
-  
+  PrePurchaseEnabled Boolean?  @default(false)
+  PostPurchaseEnabled Boolean? @default(false)
+
 }
 
 model PrePurchase{

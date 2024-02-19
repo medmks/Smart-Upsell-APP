@@ -3,7 +3,7 @@
 client_id = "95db8860bb8b4ea7513b7e60ab59d732"
 name = "smart-upsell-app"
 handle = "smart-upsell-app"
-application_url = "https://rec-hindu-warned-backgrounds.trycloudflare.com"
+application_url = "https://situations-incurred-drew-fat.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://rec-hindu-warned-backgrounds.trycloudflare.com/auth/callback",
-  "https://rec-hindu-warned-backgrounds.trycloudflare.com/auth/shopify/callback",
-  "https://rec-hindu-warned-backgrounds.trycloudflare.com/api/auth/callback"
+  "https://situations-incurred-drew-fat.trycloudflare.com/auth/callback",
+  "https://situations-incurred-drew-fat.trycloudflare.com/auth/shopify/callback",
+  "https://situations-incurred-drew-fat.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
