@@ -15,17 +15,18 @@ import {
   useApplyCartLinesChange,
   useApi,
   useSettings,
-
- 
+  
 } from "@shopify/ui-extensions-react/checkout";
+
 
 export default reactExtension("purchase.checkout.block.render", () => <App />);
 
 function App() {
+
   const { query, i18n, sessionToken} = useApi();
   const applyCartLinesChange = useApplyCartLinesChange();
-  const [show, setShow] = useState(true);
-  const [products, setProducts] = useState([]);
+  const [show, setShow] = useState(false);
+  const [recomendedproducts, setrecomendedproducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -33,59 +34,116 @@ function App() {
   const settings = useSettings();
   const TitleExtension = settings.Extension_title;
   const Limit = settings.Extension_limit;
+  const cartLineProductVariantIds = lines.map((item) => item.merchandise.product.id);
   
 
 
-
   useEffect(() => {
-    async function queryApi() {
-      try {
-        const token = await sessionToken.get();
-        const data = await FetchfromApisettings(token);
-        console.log(data);
-         setShow(data)
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    }
-    async function FetchfromApisettings(token) {
-      const res = fetch(
-          'https://spirits-captain-surfing-verbal.trycloudflare.com/api/settings',
+    async function FetchTheRecommendedProduct(productId) {
+      setLoading(true) 
+
+      try{
+        const  {data}  = await query(
+          `query productRecommendations($productId: ID!) {
+            productRecommendations(productId: $productId) {
+              id
+              title
+              featuredImage{
+                url
+              }
+              priceRange{
+                maxVariantPrice{
+                  amount
+                }
+              }
+            }
+          }`,
           {
-            method: 'GET',
-            mode: 'cors',
-            credentials: 'include',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          },
-        ).then((res)=>{
-          return res.json()
-        })
-        .then((data)=>{
-          return data
-        })
-      return res
-  }
+            variables: { productId: productId},
+          }
+        );
+        setrecomendedproducts(data.productRecommendations)
+        return data
+      }catch(error){
+        console.log(error);
+      }finally{
+       setLoading(false) 
+      }
+      
+    }
+
+    //REVIEW: queryApi
+    async function queryApi() {
+      const token = await sessionToken.get();
+      const {PrePurchaseEnabled} = await FetchfromApisettings(token);
+      if(PrePurchaseEnabled == false ){
+          console.log("no rendering");
+          return null
+      }
+      setShow(true)
+      const ProductInCart = cartLineProductVariantIds[0].toString()
+      const {productRecommendations} = await FetchTheRecommendedProduct(ProductInCart);
+      // console.log('=====RecommendedProduct=====');
+      // console.log(productRecommendations);
+      
+    }
 
   queryApi();
-  fetchProducts(Limit,lines)
-  }, [sessionToken,Limit]);
 
-    
+  }, []);
+
   useEffect(() => {
     if (showError) {
       const timer = setTimeout(() => setShowError(false), 3000);
       return () => clearTimeout(timer);
     }
   }, [showError]);
+  async function FetchfromApisettings(token) {
+    const res = fetch(
+        'https://opponents-request-pulling-substitute.trycloudflare.com/api/settings',
+        {
+          method: 'GET',
+          mode: 'cors',
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      ).then((res)=>{
+        return res.json()
+      })
+      .then((data)=>{
+        console.log('====================================');
+        console.log(data);
+        console.log('====================================');
+        return data
+      })
+    return res
+}
+  async function handleAddToCart(variantId) {
 
-    async function handleAddToCart(variantId) {
       setAdding(true);
+      const  {data}  = await query(` 
+      query ($variantId:ID!) {
+        product(id: $variantId) {
+          variants(first:1){
+            nodes{
+              id
+            }
+          }
+        }
+      }
+      `,{
+        variables: { variantId: variantId},
+      });
+
+
+      const { id } = data.product.variants.nodes[0];
+
       const result = await applyCartLinesChange({
         type: 'addCartLine',
-        merchandiseId: variantId,
+        merchandiseId: id,
         quantity: 1,
       });
       setAdding(false);
@@ -95,68 +153,24 @@ function App() {
       }
     }
 
-  async function fetchProducts(limit,VariantId) {
-    setLoading(true);
-    console.log('====================================');
-    console.log(VariantId);
-    console.log('====================================');
-    try {
-      const { data } = await query(
-        `query ($first: Int!) {
-          products(first: $first) {
-            nodes {
-              id
-              title
-              images(first:1){
-                nodes {
-                  url
-                }
-              }
-              variants(first: 1) {
-                nodes {
-                  id
-                  price {
-                    amount
-                  }
-                }
-              }
-            }
-          }
-        }`,
-        {
-          variables: { first: limit?limit:2},
-        }
-      );
-      setProducts(data.products.nodes);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-
   if (loading) {
     return <LoadingSkeleton />;
   }
 
-  if (!loading && products.length === 0) {
+  if (!loading && recomendedproducts.length === 0 ) {
     return null;
   }
+  // const productsOnOffer = getProductsOnOffer(lines, products);
+  const RecomendedOnOffer = getRecomendedproductsOnOffer(lines, recomendedproducts);
 
-  const productsOnOffer = getProductsOnOffer(lines, products);
-
-  if (!productsOnOffer.length) {
+  if (!RecomendedOnOffer.length || show === false) {
     return null;
   }
-
-
 
   return (
-
-    show && (
-    <ProductOffer
-      product={productsOnOffer[0]}
+ (
+    <ProductRecomandation
+      product={RecomendedOnOffer[0]}
       i18n={i18n}
       adding={adding}
       handleAddToCart={handleAddToCart}
@@ -164,8 +178,6 @@ function App() {
       TitleExtension={TitleExtension}
     />
   )
-
-
   );
 }
 
@@ -194,27 +206,25 @@ function LoadingSkeleton() {
   );
 }
 
-function getProductsOnOffer(lines, products) {
 
-  const cartLineProductVariantIds = lines.map((item) => item.merchandise.id);
+function getRecomendedproductsOnOffer(lines, products) {
 
+  const cartLineProductVariantIds = lines.map((item) => item.merchandise.product.id);
   return products.filter((product) => {
-    const isProductVariantInCart = product.variants.nodes.some(({ id }) =>
-      cartLineProductVariantIds.includes(id)
-    );
+    const isProductVariantInCart = [product].some(({ id }) => cartLineProductVariantIds.includes(id) );
     return !isProductVariantInCart;
   });
 }
-
-function ProductOffer({ product, i18n, adding, handleAddToCart, showError,TitleExtension }) {
-  const { images, title, variants } = product;
-  const renderPrice = i18n.formatCurrency(variants.nodes[0].price.amount);
-  const imageUrl =
-    images.nodes[0]?.url ??
+function ProductRecomandation({ product, i18n, adding, handleAddToCart, showError,TitleExtension }) {
+  const { featuredImage, title, priceRange, id } = product;
+  const renderPrice = i18n.formatCurrency(priceRange.maxVariantPrice.amount
+    );
+    const imageUrl =
+    featuredImage.url ??
     'https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_medium.png?format=webp&v=1530129081';
-
-  return (
-    <BlockStack spacing='loose'>
+    
+    return (
+      <BlockStack spacing='loose'>
       <Divider />
       <Heading level={2}>{TitleExtension ? TitleExtension:" You might also like" }  </Heading>
       <BlockStack spacing='loose'>
@@ -222,7 +232,7 @@ function ProductOffer({ product, i18n, adding, handleAddToCart, showError,TitleE
           spacing='base'
           columns={[64, 'fill', 'auto']}
           blockAlignment='center'
-        >
+          >
           <Image
             border='base'
             borderWidth='base'
@@ -230,7 +240,7 @@ function ProductOffer({ product, i18n, adding, handleAddToCart, showError,TitleE
             source={imageUrl}
             description={title}
             aspectRatio={1}
-          />
+            />
           <BlockStack spacing='none'>
             <Text size='medium' emphasis='strong'>
               {title}
@@ -241,8 +251,8 @@ function ProductOffer({ product, i18n, adding, handleAddToCart, showError,TitleE
             kind='secondary'
             loading={adding}
             accessibilityLabel={`Add ${title} to cart`}
-            onPress={() => handleAddToCart(variants.nodes[0].id)}
-          >
+            onPress={() => handleAddToCart(id.toString())}
+            >
             Add
           </Button>
         </InlineLayout>
@@ -259,3 +269,101 @@ function ErrorBanner() {
     </Banner>
   );
 }
+
+
+
+
+
+
+// async function fetchProducts(limit,VariantId) {
+  //       setLoading(true);
+  //   try {
+    //     const { data } = await query(
+      //       `query ($first: Int!) {
+        //         products(first: $first) {
+  //           nodes {
+    //             id
+    //             title
+    //             images(first:1){
+      //               nodes {
+  //                 url
+  //               }
+  //             }
+  //             variants(first: 1) {
+  //               nodes {
+    //                 id
+    //                 price {
+      //                   amount
+      //                 }
+      //               }
+      //             }
+      //           }
+      //         }
+      //       }`,
+      //       {
+        //         variables: { first: 2},
+        //       }
+        //     );
+        //     setProducts(data.products.nodes);
+        //     // console.log('====data.products.nodes====');
+        //     // console.log(data.products.nodes);
+        //   } catch (error) {
+          //     console.error(error);
+          //   } finally {
+            //     setLoading(false);
+            //   }
+            // }
+            // function getProductsOnOffer(lines, products) {
+            //   const cartLineProductVariantIds = lines.map((item) => item.merchandise.id);
+            //   return products.filter((product) => {
+            //     const isProductVariantInCart = product.variants.nodes.some(({ id }) =>
+            //       cartLineProductVariantIds.includes(id)
+            //     );
+            //     return !isProductVariantInCart;
+            //   });
+            // }
+            // function ProductOffer({ product, i18n, adding, handleAddToCart, showError,TitleExtension }) {
+            //   const { images, title, variants } = product;
+            //   const renderPrice = i18n.formatCurrency(variants.nodes[0].price.amount);
+            //   const imageUrl =
+            //     images.nodes[0]?.url ??
+            //     'https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_medium.png?format=webp&v=1530129081';
+            
+            //   return (
+            //     <BlockStack spacing='loose'>
+            //       <Divider />
+            //       <Heading level={2}>{TitleExtension ? TitleExtension:" You might also like" }  </Heading>
+            //       <BlockStack spacing='loose'>
+            //         <InlineLayout
+            //           spacing='base'
+            //           columns={[64, 'fill', 'auto']}
+            //           blockAlignment='center'
+            //         >
+            //           <Image
+            //             border='base'
+            //             borderWidth='base'
+            //             borderRadius='loose'
+            //             source={imageUrl}
+            //             description={title}
+            //             aspectRatio={1}
+            //           />
+            //           <BlockStack spacing='none'>
+            //             <Text size='medium' emphasis='strong'>
+            //               {title}
+            //             </Text>
+            //             <Text appearance='subdued'>{renderPrice}</Text>
+            //           </BlockStack>
+            //           <Button
+            //             kind='secondary'
+            //             loading={adding}
+            //             accessibilityLabel={`Add ${title} to cart`}
+            //             onPress={() => handleAddToCart(variants.nodes[0].id)}
+            //           >
+            //             Add
+            //           </Button>
+            //         </InlineLayout>
+            //       </BlockStack>
+            //       {showError && <ErrorBanner />}
+            //     </BlockStack>
+            //   );
+            // }

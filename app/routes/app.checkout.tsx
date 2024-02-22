@@ -15,13 +15,10 @@ export type LoaderDataprops = {
 export const loader:LoaderFunction = async ({ request, params }) =>{
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
    await authenticate.admin(request);
-   
    const { session } = await authenticate.admin(request);    
-   const { id } = session
-
+   const { id } = session;
    const ExtensionSettings = await getsettingsbyId(id);
-
-  return ExtensionSettings
+  return ExtensionSettings;
 }
 
 //REVIEW: ActionFunction triggered the action when posting data  

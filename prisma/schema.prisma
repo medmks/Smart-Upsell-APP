@@ -21,7 +21,6 @@ model Session {
   userId      BigInt?
   PrePurchaseEnabled Boolean?  @default(false)
   PostPurchaseEnabled Boolean? @default(false)
-
 }
 
 model PrePurchase{

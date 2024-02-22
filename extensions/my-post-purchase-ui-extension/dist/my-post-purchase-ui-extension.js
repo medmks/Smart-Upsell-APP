@@ -16929,7 +16929,7 @@ For more info, visit https://reactjs.org/link/mock-scheduler`);
 
   // extensions/my-post-purchase-ui-extension/src/index.jsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime());
-  var APP_URL = "https://centre-merge-foo-professionals.trycloudflare.com";
+  var APP_URL = "https://acre-referenced-prevention-survey.trycloudflare.com";
   extend(
     "Checkout::PostPurchase::ShouldRender",
     (_0) => __async(void 0, [_0], function* ({ inputData, storage }) {
@@ -16943,7 +16943,7 @@ For more info, visit https://reactjs.org/link/mock-scheduler`);
           referenceId: inputData.initialPurchase.referenceId
         })
       }).then((response) => response.json());
-      yield storage.update(postPurchaseOffer);
+      yield storage.update(postPurchaseOffer.offers);
       return { render: true };
     })
   );

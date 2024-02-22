@@ -17,7 +17,7 @@ import {
 } from "@shopify/post-purchase-ui-extensions-react";
 
 // For local development, replace APP_URL with your local tunnel URL.
-const APP_URL = "https://centre-merge-foo-professionals.trycloudflare.com";
+const APP_URL = "https://acre-referenced-prevention-survey.trycloudflare.com";
 
 // Preload data from your app server to ensure that the extension loads quickly.
 extend(
@@ -34,7 +34,7 @@ extend(
       }),
     }).then((response) => response.json());
 
-    await storage.update(postPurchaseOffer);
+    await storage.update(postPurchaseOffer.offers);
 
     // For local development, always show the post-purchase page
     return { render: true };
@@ -68,8 +68,7 @@ export function App() {
       }
     ];
      
-
-    async function calculatePurchase() {
+async function calculatePurchase() {
       // Call Shopify to calculate the new price of the purchase, if the above changes are applied.
       const result = await calculateChangeset({
         changes:changes,
@@ -79,7 +78,6 @@ export function App() {
       setCalculatedPurchase(result.calculatedPurchase);
       setLoading(false);
     }
-
     calculatePurchase();
   }, [calculateChangeset, purchaseOption]);
 

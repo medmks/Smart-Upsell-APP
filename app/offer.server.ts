@@ -1,5 +1,6 @@
 // import { ApiVersion } from "@shopify/shopify-api";
 import db from "./db.server";
+import { unauthenticated } from "./shopify.server";
 const OFFERS = [
           {
             id: 1,
@@ -24,46 +25,74 @@ const OFFERS = [
             ],
           },
         ];
+const query =`
+        {
+                 products(first: 1) {
+                   edges {
+                     node {
+                       id
+                       legacyResourceId
+                       title
+                       featuredImage {
+                         url
+                       }
+                       description
+                       variants(first: 1) {
+                         edges {
+                           node {
+                             price
+                             compareAtPrice
+                             id
+                             legacyResourceId
+                           }
+                         }
+                       }
+                     }
+                   }
+                 }
+               }`
+       
+export async function getRecomendedOffers(productId:string) {
 
+  const { storefront }:any = await unauthenticated.storefront(
+    'my-upsell-store.myshopify.com'
+  );
+  const response = await storefront.graphql(
+    `#graphql
+    query productRecommendations($productId: ID!) {
+      productRecommendations(productId: $productId) {
+        id
+      }
+    }`,
 
-
-
- const query =`
- {
-          products(first: 1) {
-            edges {
-              node {
-                id
-                legacyResourceId
-                title
-                featuredImage {
-                  url
-                }
-                description
-                variants(first: 1) {
-                  edges {
-                    node {
-                      price
-                      compareAtPrice
-                      id
-                      legacyResourceId
-                    }
-                  }
-                }
-              }
-            }
-          }
+        {
+          variables: { productId: productId},
         }
+  );
+  const data = await response.json();
+
+  return data
+
+}
+
+
+
+
+
+
+
+
+
+
         
-`
     async function getAccessToken(shop:string) {
       const session = await db.session.findFirst({
           where:{
                     shop:shop
           },
-                    orderBy: {
-                    expires: 'desc',
-                    },
+          orderBy: {
+          expires: 'desc',
+          },
       })  
 
       return session ? session.accessToken : null;    
@@ -74,17 +103,15 @@ const OFFERS = [
           const AccessToken =  await getAccessToken(shop)
 
           try{
-                    const response = await fetch(`https://${shop}/admin/api/2024-01/graphql.json`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/graphql",
-                            "X-Shopify-Access-Token": AccessToken!
+              const response = await fetch(`https://${shop}/admin/api/2024-01/graphql.json`, {
+                method: "POST",
+                headers: {
+                "Content-Type": "application/graphql",
+                "X-Shopify-Access-Token": AccessToken!
                         },
-                        body: query
-            
+                body: query
                     });
-            
-                    if(response.ok){
+                if(response.ok){
                         const data = await response.json()
   
                         const {
@@ -94,8 +121,7 @@ const OFFERS = [
                         } = data;
                         return edges
                     }
-            
-                    return null
+                  return null
             
                 } catch(err){
                     console.log(err)
