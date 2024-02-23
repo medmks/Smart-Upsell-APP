@@ -3,7 +3,7 @@
 client_id = "95db8860bb8b4ea7513b7e60ab59d732"
 name = "smart-upsell-app"
 handle = "smart-upsell-app"
-application_url = "https://opponents-request-pulling-substitute.trycloudflare.com"
+application_url = "https://partition-wiley-butter-extreme.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://opponents-request-pulling-substitute.trycloudflare.com/auth/callback",
-  "https://opponents-request-pulling-substitute.trycloudflare.com/auth/shopify/callback",
-  "https://opponents-request-pulling-substitute.trycloudflare.com/api/auth/callback"
+  "https://partition-wiley-butter-extreme.trycloudflare.com/auth/callback",
+  "https://partition-wiley-butter-extreme.trycloudflare.com/auth/shopify/callback",
+  "https://partition-wiley-butter-extreme.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

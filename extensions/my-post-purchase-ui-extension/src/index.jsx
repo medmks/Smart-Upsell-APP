@@ -15,14 +15,14 @@ import {
   TextBlock,
   Layout,
 } from "@shopify/post-purchase-ui-extensions-react";
-
-// For local development, replace APP_URL with your local tunnel URL.
-const APP_URL = "https://acre-referenced-prevention-survey.trycloudflare.com";
+const APP_URL = "https://submitting-unlikely-lots-therefore.trycloudflare.com";
 
 // Preload data from your app server to ensure that the extension loads quickly.
-extend(
+extend( 
   "Checkout::PostPurchase::ShouldRender",
   async ({ inputData, storage }) => {
+
+
     const postPurchaseOffer = await fetch(`${APP_URL}/api/offer`, {
       method: "POST",
       headers: {
@@ -34,52 +34,50 @@ extend(
       }),
     }).then((response) => response.json());
 
-    await storage.update(postPurchaseOffer.offers);
-
+    await storage.update(postPurchaseOffer);
     // For local development, always show the post-purchase page
     return { render: true };
   }
 );
-
 render("Checkout::PostPurchase::Render", () => <App />);
 
 export function App() {
   const { storage, inputData, calculateChangeset, applyChangeset, done } = useExtensionInput();
   const [loading, setLoading] = useState(true);
   const [calculatedPurchase, setCalculatedPurchase] = useState();
-
-  const { offers } = storage.initialData;
-  const purchaseOption = offers[0].node;
-  console.log(purchaseOption);
+  const data = storage.initialData;
+  // const purchaseOption = offers[0].node;
+  const purchaseOption = {id:0};
+  console.log("====Recomended product====");
+  console.log(data);
 
   // Define the changes that you want to make to the purchase, including the discount to the product.
-  useEffect(() => {
-    const changes = [
-      {
-        type: "add_variant", 
-        variantID:  purchaseOption.variants.edges[0].node.legacyResourceId,
-        quantity: 1,
-            discount: {
-              value: 15,
-              valueType: "percentage",
-              title: "15% off",
-            },
+//   useEffect(() => {
+//     const changes = [
+//       {
+//         type: "add_variant", 
+//         variantID:  purchaseOption.variants.edges[0].node.legacyResourceId,
+//         quantity: 1,
+//             discount: {
+//               value: 15,
+//               valueType: "percentage",
+//               title: "15% off",
+//             },
+//       }
+//     ];
 
-      }
-    ];
-     
-async function calculatePurchase() {
-      // Call Shopify to calculate the new price of the purchase, if the above changes are applied.
-      const result = await calculateChangeset({
-        changes:changes,
-      });
+// async function calculatePurchase() {
+//       // Call Shopify to calculate the new price of the purchase, if the above changes are applied.
+//       const result = await calculateChangeset({
+//         changes:changes,
+//       });
 
-// purchaseOption.node.variants.edges[0].node
-      setCalculatedPurchase(result.calculatedPurchase);
-      setLoading(false);
-    }
-    calculatePurchase();
-  }, [calculateChangeset, purchaseOption]);
+// // purchaseOption.node.variants.edges[0].node
+//       setCalculatedPurchase(result.calculatedPurchase);
+//       setLoading(false);
+//     }
+//     calculatePurchase();
+//   }, [calculateChangeset]);
 
   // Extract values from the calculated purchase.
   const shipping =
@@ -138,7 +136,7 @@ async function calculatePurchase() {
           </TextContainer>
           <TextContainer>
             <Text size="medium">
-              Add the {purchaseOption.title ? purchaseOption.title :""} to your order and{" "}
+              Add the {purchaseOption.title ? "the product name " :"the product name"} to your order and{" "}
             </Text>
             <Text size="medium" emphasized>
               {"Add variant"}
@@ -146,7 +144,7 @@ async function calculatePurchase() {
           </TextContainer>
         </BlockStack>
       </CalloutBanner>
-       <Layout
+      {/* <Layout
         media={[
           { viewportSize: "small", sizes: [1, 0, 1], maxInlineSize: 0.9 },
           { viewportSize: "medium", sizes: [532, 0, 1], maxInlineSize: 420 },
@@ -158,14 +156,14 @@ async function calculatePurchase() {
           source={purchaseOption.featuredImage.url}
         />
       <BlockStack />
-         <BlockStack>
+          <BlockStack>
           <Heading>{purchaseOption.title}</Heading>
           <PriceHeader
             discountedPrice={discountedPrice}
             originalPrice={originalPrice}
             loading={!calculatedPurchase}
           />
-          {/* <ProductDescription textLines={purchaseOption.description} /> */}
+          <ProductDescription textLines={purchaseOption.description} /> 
           <BlockStack spacing="tight">
             <Separator />
             <MoneyLine
@@ -195,7 +193,7 @@ async function calculatePurchase() {
             </Button>
           </BlockStack>
         </BlockStack> 
-      </Layout> 
+      </Layout> */}
     </BlockStack>
   );
 }
